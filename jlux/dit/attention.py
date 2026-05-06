@@ -3,29 +3,32 @@ import jax.numpy as jnp
 import equinox as eqx
 from jaxtyping import Float, Array
 from .rope import RoPE
+from .norms import RMSNorm
 
 
 class FluxAttention(eqx.Module):
-    W_q : eqx.nn.Linear # (D, D)
-    W_k : eqx.nn.Linear # (D, D)
-    W_v : eqx.nn.Linear # (D, D)
+    W_qkv : eqx.nn.Linear # (3D, D)
     W_o : eqx.nn.Linear # (D, D)
+    
     rope : eqx.Module
     dim : int
     num_heads : int
     head_dim : int
+    q_norm : eqx.Module
+    k_norm : eqx.Module
     
     def __init__(self, dim , num_heads , key):
         self.dim = dim
         self.num_heads = num_heads
         assert dim % num_heads == 0
         self.head_dim = dim // num_heads
-        key_q, key_k, key_v, key_o = jax.random.split(key, 4)
-        self.W_q = eqx.nn.Linear(in_features = dim, out_features = dim, key = key_q, use_bias = False)
-        self.W_k = eqx.nn.Linear(in_features = dim, out_features = dim, key = key_k, use_bias = False)
-        self.W_v = eqx.nn.Linear(in_features = dim, out_features = dim, key = key_v, use_bias = False)
-        self.W_o = eqx.nn.Linear(in_features = dim, out_features = dim, key = key_o, use_bias = False)
+        key_qkv, key_o = jax.random.split(key, 2)
+
+        self.W_o = eqx.nn.Linear(in_features = dim, out_features = dim, key = key_o)
+        self.W_qkv = eqx.nn.Linear(in_features = self.dim, out_features = 3 * self.dim, key = key_qkv)
         self.rope = RoPE()
+        self.q_norm = RMSNorm(dim=self.head_dim)
+        self.k_norm = RMSNorm(dim=self.head_dim)
 
     def _split_head(self, x):
         #extract from w_proj(x) , reshape across head him
@@ -42,19 +45,23 @@ class FluxAttention(eqx.Module):
         x = jnp.reshape(x, (B, T, H * d_H))
         return x
 
-    def __call__(self, x: Float[Array , "batch seq_len dim"]):
-        q_proj = jax.vmap(jax.vmap(self.W_q))
-        k_proj = jax.vmap(jax.vmap(self.W_k))
-        v_proj = jax.vmap(jax.vmap(self.W_v))
+    def __call__(self, x: Float[Array , "batch seq_len dim"], pos_ids):
         o_proj = jax.vmap(jax.vmap(self.W_o))
 
-        # (B, H, T, d_H)
-        Q = self._split_head(q_proj(x)) 
-        K = self._split_head(k_proj(x))
-        V = self._split_head(v_proj(x))
+        qkv_proj = jax.vmap(jax.vmap(self.W_qkv))
 
-        Q = self.rope(Q)
-        K = self.rope(K)
+        q_proj, k_proj, v_proj = jnp.split(qkv_proj(x), [self.dim, 2 * self.dim], axis = -1)
+
+        # (B, H, T, d_H)
+        Q = self._split_head(q_proj) 
+        K = self._split_head(k_proj)
+        V = self._split_head(v_proj)
+
+        Q = self.q_norm(Q)
+        K = self.k_norm(K)
+
+        Q = self.rope(Q, pos_ids)
+        K = self.rope(K, pos_ids)
 
         scores = Q @ jnp.swapaxes(K, -1 , -2) / jnp.sqrt(self.head_dim)
         weights = jax.nn.softmax(scores, axis = -1)

@@ -16,7 +16,7 @@ class LayerNorm(eqx.Module):
         self.use_affine = use_affine
 
     def __call__(self, x):
-        # x.shape = (B, T , D)
+        # x.shape = (...,  D)
         mean = jnp.mean(x, axis = -1, keepdims = True)
         var = jnp.var(x, axis = -1, keepdims = True)
         normalized = (x - mean) / (jnp.sqrt(var + self.eps))
@@ -29,11 +29,11 @@ class RMSNorm(eqx.Module):
     eps: Float
 
     def __init__(self, dim):
-        self.gamma = jax.ones(dim)
-        self.eps = 1e-6
+        self.gamma = jnp.ones(dim)
+        self.eps = 1e-5
 
     def __call__(self, x):
-        #x.shape = (B, T, D)
+        #x.shape = (..., D)
         ms = jnp.mean(jnp.square(x), axis = -1, keepdims = True)
         normalized = x / (jnp.sqrt(ms + self.eps))
         return self.gamma * normalized
