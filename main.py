@@ -11,7 +11,7 @@ def main():
 
     x = jax.random.normal(subkey, (2, 26, 3072))
     attn = FluxAttention(dim = 3072, num_heads = 24, key = key)
-    out = attn(x, pos_ids)
+    out = eqx.filter_vmap(attn, in_axes=(0,None))(x, pos_ids)
     print(f"shape of x:{x.shape}, shape of attn(x):{out.shape}")
 
 if __name__ == "__main__":

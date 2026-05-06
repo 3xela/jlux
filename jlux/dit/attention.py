@@ -9,7 +9,7 @@ from .norms import RMSNorm
 class FluxAttention(eqx.Module):
     W_qkv : eqx.nn.Linear # (3D, D)
     W_o : eqx.nn.Linear # (D, D)
-    
+
     rope : eqx.Module
     dim : int
     num_heads : int
@@ -32,27 +32,27 @@ class FluxAttention(eqx.Module):
 
     def _split_head(self, x):
         #extract from w_proj(x) , reshape across head him
-        B, T, _ = x.shape
-        x = jnp.reshape(x, (B, T, self.num_heads, self.head_dim))
-        # swap axes to (B, H, T, d_H)
-        return jnp.swapaxes(x, 1, 2)
+        T, _ = x.shape
+        x = jnp.reshape(x, (T, self.num_heads, self.head_dim))
+        # swap axes to (H, T, d_H)
+        return jnp.swapaxes(x, 0, 1)
 
     def _merge_heads(self, x):
-        B, H, T, d_H = x.shape
+        H, T, d_H = x.shape
         #undo axes swap
-        x = jnp.swapaxes(x, 1,2)
-        #reshape back to (B, T , D)
-        x = jnp.reshape(x, (B, T, H * d_H))
+        x = jnp.swapaxes(x, 0, 1)
+        #reshape back to (T , D)
+        x = jnp.reshape(x, (T, H * d_H))
         return x
 
-    def __call__(self, x: Float[Array , "batch seq_len dim"], pos_ids):
-        o_proj = jax.vmap(jax.vmap(self.W_o))
+    def __call__(self, x: Float[Array , "seq_len dim"], pos_ids):
+        o_proj = jax.vmap(self.W_o)
 
-        qkv_proj = jax.vmap(jax.vmap(self.W_qkv))
+        qkv_proj = jax.vmap(self.W_qkv)
 
         q_proj, k_proj, v_proj = jnp.split(qkv_proj(x), [self.dim, 2 * self.dim], axis = -1)
 
-        # (B, H, T, d_H)
+        # (H, T, d_H)
         Q = self._split_head(q_proj) 
         K = self._split_head(k_proj)
         V = self._split_head(v_proj)
