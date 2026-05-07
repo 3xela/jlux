@@ -50,6 +50,9 @@ class RoPE(eqx.Module):
     def __call__(self, x, position_ids):
         #x.shape(H, T, head_dim)
         # Split into axis-0, axis-1, axis-2 slices: sizes 16, 56, 56 for Flux head_dim=128
+        # TODO: generalize split sizes — currently hardcoded for FLUX head_dim=128
+#       with (16, 56, 56) axis allocation. Use self.axis_dim when extending
+#       to other BFL models or different head_dims.
         first, second, third = jnp.split(x, [16,72], axis = -1)
 
         first = rotate(first, position_ids[:, 0], self.theta)

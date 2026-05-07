@@ -1,6 +1,6 @@
 import jax
 import jax.numpy as jnp
-from jlux.dit.rope import RoPE, build_position_ids   # adjust import path to your file structure
+from jlux.dit.modules.rope import RoPE, build_position_ids   # adjust import path to your file structure
 
 
 def test_identity_at_zero():

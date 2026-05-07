@@ -1,7 +1,7 @@
 import equinox as eqx
 import jax
-from jlux.dit.attention import FluxAttention
-from jlux.dit.rope import build_position_ids
+from jlux.dit.modules.attention import FluxAttention
+from jlux.dit.modules.rope import build_position_ids
 
 def main():
     key = jax.random.PRNGKey(0)
