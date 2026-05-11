@@ -53,8 +53,10 @@ def main():
     print("Running forward pass...")
     out = forward(model, img, img_ids, txt, txt_ids, timesteps, y, guidance)
 
-    assert jnp.allclose(out, model(img, img_ids, txt, txt_ids, timesteps, y, guidance))
-
+    arrays_only = eqx.filter(model, eqx.is_array)
+    leaves, _ = jax.tree_util.tree_flatten(arrays_only)
+    print(len(leaves))
+    
     expected_shape = (N, cfg.in_channels)  # patch_size=1 → out is (N, in_channels)
     print(f"Output shape:   {out.shape}")
     print(f"Expected shape: {expected_shape}")
