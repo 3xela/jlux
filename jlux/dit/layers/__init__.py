@@ -3,6 +3,8 @@ from .mlp import FluxMLP
 from .modulation import Modulation3D, Modulation6D
 from .norms import LayerNorm, QKNorm, RMSNorm
 from .rope import RoPE, build_position_ids
+from .embed import MLPEmbedder
+from .final import FinalLayer
 
 __all__ = [
     "FluxMLP",
@@ -14,4 +16,6 @@ __all__ = [
     "RMSNorm",
     "RoPE",
     "build_position_ids",
+    "MLPEmbedder",
+    "FinalLayer"
 ]
