@@ -6,7 +6,7 @@ from .norms import QKNorm
 
 class FluxSelfAttention(eqx.Module):
     qkv: eqx.nn.Linear  # (3D, D)
-    o: eqx.nn.Linear
+    proj: eqx.nn.Linear
     norm: QKNorm
 
     num_heads: int
@@ -18,9 +18,9 @@ class FluxSelfAttention(eqx.Module):
         self.num_heads = num_heads
         assert dim % num_heads == 0
         self.head_dim = dim // num_heads
-        key_qkv, key_o = jax.random.split(key, 2)
+        key_qkv, key_proj = jax.random.split(key, 2)
 
-        self.o = eqx.nn.Linear(in_features=dim, out_features=dim, key=key_o)
+        self.proj = eqx.nn.Linear(in_features=dim, out_features=dim, key=key_proj)
         self.qkv = eqx.nn.Linear(
             in_features=self.dim, out_features=3 * self.dim, key=key_qkv
         )
@@ -36,7 +36,7 @@ class FluxSelfAttention(eqx.Module):
 
     def out_proj(self, context):
         x = merge_heads(context)
-        return jax.vmap(self.o)(x)
+        return jax.vmap(self.proj)(x)
 
 
 def split_head(x, num_heads):

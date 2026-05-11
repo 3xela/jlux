@@ -8,13 +8,13 @@ from ..layers.rope import RoPE
 
 
 class FluxSingleStreamBlock(eqx.Module):
-    modulate: Modulation3D
+    modulation: Modulation3D
     linear1: eqx.nn.Linear  # (D, 7D)
     linear2: eqx.nn.Linear  # (5D, D)
 
     rope: RoPE
-    qk_norm: QKNorm
-    norm: LayerNorm
+    norm: QKNorm
+    pre_norm: LayerNorm
 
     dim: int
     head_dim: int
@@ -31,15 +31,15 @@ class FluxSingleStreamBlock(eqx.Module):
         self.linear2 = eqx.nn.Linear(
             in_features=5 * self.dim, out_features=self.dim, key=keys[1]
         )
-        self.modulate = Modulation3D(dim=dim, key=keys[2])
+        self.modulation = Modulation3D(dim=dim, key=keys[2])
 
         self.rope = RoPE()
-        self.qk_norm = QKNorm(dim=self.head_dim)
-        self.norm = LayerNorm(dim=self.dim, use_affine=False)
+        self.norm = QKNorm(dim=self.head_dim)
+        self.pre_norm = LayerNorm(dim=self.dim, use_affine=False)
 
     def __call__(self, x, temb, pos_ids):
-        shift, scale, gate = self.modulate(temb)
-        x_mod = (1 + scale) * self.norm(x) + shift
+        shift, scale, gate = self.modulation(temb)
+        x_mod = (1 + scale) * self.pre_norm(x) + shift
         fused = jax.vmap(self.linear1)(x_mod)
         QKV, mlp_in = jnp.split(fused, [3 * self.dim], axis=1)
         Q, K, V = jnp.split(QKV, [self.dim, 2 * self.dim], axis=1)
@@ -48,7 +48,7 @@ class FluxSingleStreamBlock(eqx.Module):
             split_head(K, self.num_heads),
             split_head(V, self.num_heads),
         )
-        Q, K, V = self.qk_norm(Q, K, V)
+        Q, K, V = self.norm(Q, K, V)
         Q = self.rope(Q, pos_ids)
         K = self.rope(K, pos_ids)
         scores = Q @ jnp.swapaxes(K, -1, -2) / jnp.sqrt(self.head_dim)

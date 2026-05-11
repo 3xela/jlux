@@ -10,8 +10,12 @@ class LayerNorm(eqx.Module):
     use_affine: bool
 
     def __init__(self, dim, use_affine=True):
-        self.gamma = jnp.ones(dim)
-        self.beta = jnp.zeros(dim)
+        if use_affine:
+            self.gamma = jnp.ones(dim)
+            self.beta = jnp.zeros(dim)
+        else:
+            self.gamma = None
+            self.beta = None
         self.eps = 1e-6
         self.use_affine = use_affine
 
@@ -25,27 +29,27 @@ class LayerNorm(eqx.Module):
 
 
 class RMSNorm(eqx.Module):
-    gamma: Float[Array, "dim"]
+    scale: Float[Array, "dim"]
     eps: Float
 
     def __init__(self, dim):
-        self.gamma = jnp.ones(dim)
+        self.scale = jnp.ones(dim)
         self.eps = 1e-6
 
     def __call__(self, x):
         # x.shape = (..., D)
         ms = jnp.mean(jnp.square(x), axis=-1, keepdims=True)
         normalized = x / (jnp.sqrt(ms + self.eps))
-        return self.gamma * normalized
+        return self.scale * normalized
 
 
 class QKNorm(eqx.Module):
-    q_norm: RMSNorm
-    k_norm: RMSNorm
+    query_norm: RMSNorm
+    key_norm: RMSNorm
 
     def __init__(self, dim):
-        self.q_norm = RMSNorm(dim)
-        self.k_norm = RMSNorm(dim)
+        self.query_norm = RMSNorm(dim)
+        self.key_norm = RMSNorm(dim)
 
     def __call__(self, Q, K, V):
-        return self.q_norm(Q), self.k_norm(K), V
+        return self.query_norm(Q), self.key_norm(K), V
