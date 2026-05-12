@@ -4,6 +4,6 @@ from .layers import MLPEmbedder, timestep_embedding
 __all__ = [
     "FluxDoubleStreamBlock",
     "FluxSingleStreamBlock",
-    "MLPEmbedder", 
+    "MLPEmbedder",
     "timestep_embedding",
 ]

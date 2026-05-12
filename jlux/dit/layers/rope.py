@@ -38,7 +38,7 @@ def rotate(x, position_ids, theta):
 
     stacked = jnp.stack([x_real_new, x_imag_new], axis=-1)
     stacked = stacked.reshape(x.shape)
-    return stacked
+    return stacked.astype(x.dtype)
 
 
 class RoPE(eqx.Module):

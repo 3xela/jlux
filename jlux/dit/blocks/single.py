@@ -51,8 +51,15 @@ class FluxSingleStreamBlock(eqx.Module):
         Q, K, V = self.norm(Q, K, V)
         Q = self.rope(Q, pos_ids)
         K = self.rope(K, pos_ids)
-        scores = Q @ jnp.swapaxes(K, -1, -2) / jnp.sqrt(self.head_dim)
-        attn = jax.nn.softmax(scores, axis=-1) @ V
+
+        Q_t = jnp.swapaxes(Q, 0, 1)
+        K_t = jnp.swapaxes(K, 0, 1)
+        V_t = jnp.swapaxes(V, 0, 1)
+
+        attn_t = jax.nn.dot_product_attention(Q_t, K_t, V_t)
+
+        attn = jnp.swapaxes(attn_t, 0, 1)
+
         context = merge_heads(attn)
         mlp_activated = jax.nn.gelu(mlp_in, approximate=True)
         concat = jnp.concat([context, mlp_activated], axis=-1)

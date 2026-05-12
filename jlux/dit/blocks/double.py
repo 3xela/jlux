@@ -19,9 +19,7 @@ class FluxDoubleStreamBlock(eqx.Module):
     txt_attn: FluxSelfAttention
     img_mlp: FluxMLP
     txt_mlp: FluxMLP
-
     rope: RoPE
-
     dim: int
     num_heads: int
     head_dim: int
@@ -63,6 +61,7 @@ class FluxDoubleStreamBlock(eqx.Module):
             img_scale_mlp,
             img_gate_mlp,
         ) = self.img_mod(temb)
+
         (
             txt_shift_msa,
             txt_scale_msa,
@@ -72,10 +71,14 @@ class FluxDoubleStreamBlock(eqx.Module):
             txt_gate_mlp,
         ) = self.txt_mod(temb)
 
-        img_modulated = (1 + img_scale_msa) * self.img_norm1(img) + img_shift_msa
+        img_norm_out = self.img_norm1(img)
+
+        img_modulated = (1 + img_scale_msa) * img_norm_out + img_shift_msa
+
         txt_modulated = (1 + txt_scale_msa) * self.txt_norm1(txt) + txt_shift_msa
 
         img_Q, img_K, img_V = self.img_attn.qkv_proj(img_modulated)
+
         txt_Q, txt_K, txt_V = self.txt_attn.qkv_proj(txt_modulated)
 
         s_text = txt_Q.shape[1]
@@ -87,8 +90,12 @@ class FluxDoubleStreamBlock(eqx.Module):
         Q = self.rope(Q, pos_ids)
         K = self.rope(K, pos_ids)
 
-        scores = Q @ jnp.swapaxes(K, -1, -2) / jnp.sqrt(self.head_dim)
-        attn = jax.nn.softmax(scores, axis=-1) @ V
+        Q_t = jnp.swapaxes(Q, 0, 1)
+        K_t = jnp.swapaxes(K, 0, 1)
+        V_t = jnp.swapaxes(V, 0, 1)
+
+        attn_t = jax.nn.dot_product_attention(Q_t, K_t, V_t)
+        attn = jnp.swapaxes(attn_t, 0, 1)
 
         txt_ctx, img_ctx = jnp.split(attn, [s_text], axis=1)
 

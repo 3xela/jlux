@@ -25,7 +25,9 @@ class LayerNorm(eqx.Module):
         var = jnp.var(x, axis=-1, keepdims=True)
         normalized = (x - mean) / (jnp.sqrt(var + self.eps))
 
-        return self.gamma * normalized + self.beta if self.use_affine else normalized
+        result = self.gamma * normalized + self.beta if self.use_affine else normalized
+
+        return result.astype(x.dtype)
 
 
 class RMSNorm(eqx.Module):
@@ -40,7 +42,7 @@ class RMSNorm(eqx.Module):
         # x.shape = (..., D)
         ms = jnp.mean(jnp.square(x), axis=-1, keepdims=True)
         normalized = x / (jnp.sqrt(ms + self.eps))
-        return self.scale * normalized
+        return (self.scale * normalized).astype(x.dtype)
 
 
 class QKNorm(eqx.Module):
