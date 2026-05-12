@@ -29,7 +29,9 @@ def main():
     key = jax.random.PRNGKey(0)
     model_key, img_key, txt_key, y_key = jax.random.split(key, 4)
 
-    model = Flux(cfg=cfg, key=model_key)
+
+
+    model = Flux(cfg=FluxParams(), key=model_key)
 
     # Dummy inputs.
     H_p, W_p = 8, 8           # 8x8 patch grid → N = 64 image tokens

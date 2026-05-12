@@ -1,5 +1,8 @@
-from .flux import Flux
+from .flux import Flux, FluxParams
+from .load_model import load_flux
 
 __all__ = [
-    "Flux"
+    "Flux",
+    "FluxParams",
+    "load_flux"
 ]
