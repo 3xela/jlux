@@ -8,6 +8,9 @@ from safetensors import safe_open
 
 
 def path_to_key(path: tuple):
+    """
+    Render a pytree path tuple as a safetensors-style dot-separated key string. Applies BFL's Sequential-indexing rewrites for img_mlp, txt_mlp, and adaLN_modulation
+    """
     out = []
     for entry in path:
         if isinstance(entry, GetAttrKey):
