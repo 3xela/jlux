@@ -42,8 +42,8 @@ def rotate(x, position_ids, theta):
 
 
 class RoPE(eqx.Module):
-    axis_dim: tuple
-    theta: float
+    axis_dim: tuple = eqx.field(static=True)
+    theta: float = eqx.field(static=True)
 
     def __init__(self, axis_dim=(16, 56, 56), theta=10000.0):
         self.axis_dim = axis_dim

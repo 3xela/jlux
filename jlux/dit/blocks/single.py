@@ -16,9 +16,9 @@ class FluxSingleStreamBlock(eqx.Module):
     norm: QKNorm
     pre_norm: LayerNorm
 
-    dim: int
-    head_dim: int
-    num_heads: int
+    dim: int = eqx.field(static=True)
+    head_dim: int = eqx.field(static=True)
+    num_heads: int = eqx.field(static=True)
 
     def __init__(self, dim, num_heads, key):
         self.dim = dim

@@ -20,9 +20,9 @@ class FluxDoubleStreamBlock(eqx.Module):
     img_mlp: FluxMLP
     txt_mlp: FluxMLP
     rope: RoPE
-    dim: int
-    num_heads: int
-    head_dim: int
+    dim: int = eqx.field(static=True)
+    num_heads: int = eqx.field(static=True)
+    head_dim: int = eqx.field(static=True)
 
     def __init__(self, dim, num_heads, key):
         self.dim = dim

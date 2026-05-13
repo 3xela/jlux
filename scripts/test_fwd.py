@@ -3,13 +3,14 @@
 Test forward pass through loaded FLUX.
 Verifies the loaded model traces, doesn't NaN, and produces reasonable output.
 """
+
 import time
 import jax
 import jax.numpy as jnp
 import equinox as eqx
 from huggingface_hub import hf_hub_download
 
-from jlux import Flux, FluxParams
+from jlux import FluxParams
 from jlux import load_flux
 from jlux.dit.layers.rope import build_position_ids
 
@@ -36,8 +37,8 @@ def main():
     # 256x256 effective image → 16x16 patch grid → 256 image tokens.
     # Keeps attention matrices small for first-run testing.
     H_p, W_p = 16, 16
-    N = H_p * W_p          # 256 image tokens
-    L = 64                 # 64 text tokens (T5 typically 256+, smaller for testing)
+    N = H_p * W_p  # 256 image tokens
+    L = 64  # 64 text tokens (T5 typically 256+, smaller for testing)
 
     key = jax.random.PRNGKey(0)
     k_img, k_txt, k_y = jax.random.split(key, 3)

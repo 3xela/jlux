@@ -6,8 +6,8 @@ from jaxtyping import Float, Array
 class LayerNorm(eqx.Module):
     gamma: Float[Array, "dim"] | None
     beta: Float[Array, "dim"] | None
-    eps: Float
-    use_affine: bool
+    eps: Float = eqx.field(static=True)
+    use_affine: bool = eqx.field(static=True)
 
     def __init__(self, dim, use_affine=True):
         if use_affine:
@@ -32,7 +32,7 @@ class LayerNorm(eqx.Module):
 
 class RMSNorm(eqx.Module):
     scale: Float[Array, "dim"]
-    eps: Float
+    eps: Float = eqx.field(static=True)
 
     def __init__(self, dim):
         self.scale = jnp.ones(dim)

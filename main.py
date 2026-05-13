@@ -8,9 +8,10 @@ from jlux.model.flux import Flux, FluxParams
 from jlux.dit.layers.rope import build_position_ids
 
 
-eqx.filter_jit
+@eqx.filter_jit
 def forward(model, img, img_ids, txt, txt_ids, t, y, guidance):
     return model(img, img_ids, txt, txt_ids, t, y, guidance)
+
 
 def main():
     # Tiny config for fast iteration.
@@ -21,21 +22,19 @@ def main():
     cfg = replace(
         base_cfg,
         hidden_size=128,
-        num_heads=1,           # head_dim = 128, matches RoPE axes_dim sum
-        depth=2,               # 2 double blocks
-        depth_single_blocks=2, # 2 single blocks
+        num_heads=1,  # head_dim = 128, matches RoPE axes_dim sum
+        depth=2,  # 2 double blocks
+        depth_single_blocks=2,  # 2 single blocks
     )
 
     key = jax.random.PRNGKey(0)
     model_key, img_key, txt_key, y_key = jax.random.split(key, 4)
 
-
-
     model = Flux(cfg=FluxParams(), key=model_key)
 
     # Dummy inputs.
-    H_p, W_p = 8, 8           # 8x8 patch grid → N = 64 image tokens
-    L = 16                    # 16 text tokens
+    H_p, W_p = 8, 8  # 8x8 patch grid → N = 64 image tokens
+    L = 16  # 16 text tokens
     N = H_p * W_p
 
     img = jax.random.normal(img_key, (N, cfg.in_channels))
@@ -58,7 +57,7 @@ def main():
     arrays_only = eqx.filter(model, eqx.is_array)
     leaves, _ = jax.tree_util.tree_flatten(arrays_only)
     print(len(leaves))
-    
+
     expected_shape = (N, cfg.in_channels)  # patch_size=1 → out is (N, in_channels)
     print(f"Output shape:   {out.shape}")
     print(f"Expected shape: {expected_shape}")

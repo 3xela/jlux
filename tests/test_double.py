@@ -25,8 +25,12 @@ def test_double_block_forward_shapes():
 
     img_out, txt_out = block(img, txt, temb, pos_ids)
 
-    assert img_out.shape == img.shape, f"img shape mismatch: {img_out.shape} vs {img.shape}"
-    assert txt_out.shape == txt.shape, f"txt shape mismatch: {txt_out.shape} vs {txt.shape}"
+    assert img_out.shape == img.shape, (
+        f"img shape mismatch: {img_out.shape} vs {img.shape}"
+    )
+    assert txt_out.shape == txt.shape, (
+        f"txt shape mismatch: {txt_out.shape} vs {txt.shape}"
+    )
 
 
 def test_double_block_finite():

@@ -4,7 +4,7 @@ from .norms import LayerNorm
 
 class AdaLN(eqx.Module):
     norm: LayerNorm
-    dim: int
+    dim: int = eqx.field(static=True)
 
     def __init__(self, dim):
         self.dim = dim

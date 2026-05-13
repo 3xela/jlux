@@ -9,7 +9,7 @@ class FinalLayer(eqx.Module):
     linear: eqx.nn.Linear
     adaLN_modulation: eqx.nn.Linear
 
-    dim: int
+    dim: int = eqx.field(static=True)
 
     def __init__(self, dim, patch_size, out_channels, key):
         self.dim = dim

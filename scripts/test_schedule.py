@@ -13,10 +13,10 @@ from jlux.sampler import euler_sample, build_schedule
 
 def main():
     # Realistic FLUX dev config
-    H_p, W_p = 64, 64        # 1024×1024 → 4096 image tokens
+    H_p, W_p = 64, 64  # 1024×1024 → 4096 image tokens
     N = H_p * W_p
-    L = 256                  # T5 sequence length
-    num_steps = 28           # canonical FLUX dev step count
+    L = 256  # T5 sequence length
+    num_steps = 28  # canonical FLUX dev step count
 
     # Load
     path = hf_hub_download("black-forest-labs/FLUX.1-dev", "flux1-dev.safetensors")
@@ -50,15 +50,19 @@ def main():
     # Real sampling run
     print(f"\nSampling {num_steps} steps...")
     t0 = time.time()
-    out = euler_sample(jitted_model, x_init, img_ids, txt, txt_ids, y, guidance, timesteps)
+    out = euler_sample(
+        jitted_model, x_init, img_ids, txt, txt_ids, y, guidance, timesteps
+    )
     jax.block_until_ready(out)
     elapsed = time.time() - t0
     print(f"  total: {elapsed:.2f}s  ({elapsed / num_steps * 1000:.0f}ms/step)")
 
     # Sanity
     out32 = out.astype(jnp.float32)
-    print(f"\nshape: {out.shape}, NaN: {bool(jnp.any(jnp.isnan(out32)))}, "
-          f"std: {float(jnp.std(out32)):.3f}")
+    print(
+        f"\nshape: {out.shape}, NaN: {bool(jnp.any(jnp.isnan(out32)))}, "
+        f"std: {float(jnp.std(out32)):.3f}"
+    )
 
 
 if __name__ == "__main__":

@@ -3,13 +3,14 @@
 Test the FLUX safetensors loader end-to-end.
 Loads weights from the HuggingFace cache, prints diagnostics.
 """
+
 import time
 import jax
 import jax.numpy as jnp
 import equinox as eqx
 from huggingface_hub import hf_hub_download
 
-from jlux import Flux, FluxParams
+from jlux import FluxParams
 from jlux import load_flux  # adjust import to wherever you put it
 
 
@@ -24,8 +25,10 @@ def main():
 
     # Load.
     cfg = FluxParams()
-    print(f"\nLoading FLUX with cfg.hidden_size={cfg.hidden_size}, "
-          f"depth={cfg.depth}, depth_single={cfg.depth_single_blocks}...")
+    print(
+        f"\nLoading FLUX with cfg.hidden_size={cfg.hidden_size}, "
+        f"depth={cfg.depth}, depth_single={cfg.depth_single_blocks}..."
+    )
     t0 = time.time()
     model = load_flux(cfg, path, dtype=jnp.bfloat16)
     jax.block_until_ready(model.img_in.weight)  # force materialization
@@ -44,28 +47,40 @@ def main():
     checks = [
         ("img_in.weight", model.img_in.weight, (3072, 64)),
         ("txt_in.weight", model.txt_in.weight, (3072, 4096)),
-        ("double_blocks[0].img_attn.qkv.weight",
-         model.double_blocks[0].img_attn.qkv.weight, (9216, 3072)),
-        ("single_blocks[0].linear1.weight",
-         model.single_blocks[0].linear1.weight, (21504, 3072)),
+        (
+            "double_blocks[0].img_attn.qkv.weight",
+            model.double_blocks[0].img_attn.qkv.weight,
+            (9216, 3072),
+        ),
+        (
+            "single_blocks[0].linear1.weight",
+            model.single_blocks[0].linear1.weight,
+            (21504, 3072),
+        ),
         ("final_layer.linear.weight", model.final_layer.linear.weight, (64, 3072)),
     ]
     for name, tensor, expected_shape in checks:
         ok = tensor.shape == expected_shape
         dtype_ok = tensor.dtype == jnp.bfloat16
         nan = bool(jnp.any(jnp.isnan(tensor)))
-        print(f"  {name}: shape={tensor.shape}, dtype={tensor.dtype}, "
-              f"nan={nan}, ok={ok and dtype_ok and not nan}")
+        print(
+            f"  {name}: shape={tensor.shape}, dtype={tensor.dtype}, "
+            f"nan={nan}, ok={ok and dtype_ok and not nan}"
+        )
 
     # Cheap statistical sanity: weights should be small, centered, no NaNs.
     print("\nGlobal weight stats:")
     sample = model.img_in.weight.astype(jnp.float32)
-    print(f"  img_in.weight  mean={float(jnp.mean(sample)):+.4e}  "
-          f"std={float(jnp.std(sample)):.4e}")
+    print(
+        f"  img_in.weight  mean={float(jnp.mean(sample)):+.4e}  "
+        f"std={float(jnp.std(sample)):.4e}"
+    )
 
     sample = model.double_blocks[0].img_attn.qkv.weight.astype(jnp.float32)
-    print(f"  block0.qkv     mean={float(jnp.mean(sample)):+.4e}  "
-          f"std={float(jnp.std(sample)):.4e}")
+    print(
+        f"  block0.qkv     mean={float(jnp.mean(sample)):+.4e}  "
+        f"std={float(jnp.std(sample)):.4e}"
+    )
 
     print("\n✓ Loader test complete.")
 

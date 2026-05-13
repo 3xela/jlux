@@ -7,6 +7,8 @@ dependencies = [
     "equinox",
     "jaxtyping",
     "optax",
+    "safetensors",
+    "huggingface_hub",
 ]
 
 [build-system]

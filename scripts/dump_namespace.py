@@ -6,6 +6,7 @@ paths from the jlux Flux model. Writes three files:
   - jlux_paths.txt      : jlux pytree paths (sorted)
   - namespace_diff.txt  : side-by-side diff for renaming reference
 """
+
 import jax
 import jax.tree_util as jtu
 import equinox as eqx
@@ -38,6 +39,7 @@ print(f"safetensors keys: {len(st_entries)} (written to flux_dev_keys.txt)")
 
 
 # ---------- 3. Dump jlux pytree paths ----------
+
 
 def path_to_str(path):
     parts = []
@@ -80,7 +82,11 @@ with open("namespace_diff.txt", "w") as out:
     out.write(f"{'-' * 70} | {'-' * 70}\n")
     for i in range(max_len):
         st = f"{st_entries[i][0]} {st_entries[i][1]}" if i < len(st_entries) else ""
-        jl = f"{jlux_entries[i][0]} {jlux_entries[i][1]}" if i < len(jlux_entries) else ""
+        jl = (
+            f"{jlux_entries[i][0]} {jlux_entries[i][1]}"
+            if i < len(jlux_entries)
+            else ""
+        )
         out.write(f"{st:<70} | {jl:<70}\n")
 
 print("Side-by-side written to namespace_diff.txt")

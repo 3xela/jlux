@@ -5,8 +5,8 @@ import equinox as eqx
 class FluxMLP(eqx.Module):
     linear1: eqx.nn.Linear
     linear2: eqx.nn.Linear
-    in_dim: int
-    hidden_dim: int
+    in_dim: int = eqx.field(static=True)
+    hidden_dim: int = eqx.field(static=True)
 
     def __init__(self, in_dim: int, key):
         self.in_dim = in_dim
