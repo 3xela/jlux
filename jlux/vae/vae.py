@@ -21,6 +21,7 @@ class VAEWrapper:
             return jnp.asarray(z.float().detach().cpu().numpy())
 
     def decode(self, latent: jnp.ndarray):
+        latent = latent.astype(jnp.float32)
         z = torch.from_numpy(np.asarray(latent)).to(self.device)
 
         z = z / self.scale + self.shift

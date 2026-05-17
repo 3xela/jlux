@@ -94,7 +94,7 @@ class FluxDoubleStreamBlock(eqx.Module):
         K_t = jnp.swapaxes(K, 0, 1)
         V_t = jnp.swapaxes(V, 0, 1)
 
-        attn_t = jax.nn.dot_product_attention(Q_t, K_t, V_t)
+        attn_t = jax.nn.dot_product_attention(Q_t, K_t, V_t, implementation="cudnn")
         attn = jnp.swapaxes(attn_t, 0, 1)
 
         txt_ctx, img_ctx = jnp.split(attn, [s_text], axis=1)

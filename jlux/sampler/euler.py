@@ -9,7 +9,7 @@ def mu(N):
 
 
 def schedule(t, N):
-    return (mu(N) * t) / (1 + (mu(N) - 1) * t)
+    return (jnp.exp(mu(N)) * t) / (1 + (jnp.exp(mu(N)) - 1) * t)
 
 
 def build_schedule(num_steps, N):

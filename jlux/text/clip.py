@@ -3,7 +3,7 @@ import torch
 import jax.numpy as jnp
 
 class CLIPWrapper:
-    def __init__(self, path):
+    def __init__(self, path = "openai/clip-vit-large-patch14" ):
         self._path = path
         self.device = "cuda"
         self._tokenizer = CLIPTokenizer.from_pretrained(self._path)
