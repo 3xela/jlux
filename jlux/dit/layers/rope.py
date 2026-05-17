@@ -12,8 +12,7 @@ def build_position_ids(s_text: int, H_p: int, W_p: int):
     hw_grid = jnp.reshape(hw_grid, (H_p * W_p, 3))
 
     text_pos = jnp.zeros(shape=(s_text, 3))
-    out = jnp.concat([text_pos, hw_grid], axis=0)
-    return out
+    return text_pos, hw_grid
 
 
 def rotate(x, position_ids, theta):
