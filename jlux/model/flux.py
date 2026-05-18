@@ -33,7 +33,7 @@ class Flux(eqx.Module):
 
     final_layer: FinalLayer
 
-    cfg: FluxParams
+    cfg: FluxParams = eqx.field(static=True)
 
     def __init__(self, cfg: FluxParams, key):
         self.cfg = cfg
@@ -78,6 +78,7 @@ class Flux(eqx.Module):
             key=final_key,
         )
 
+    @jax.jit
     def __call__(self, img, img_ids, txt, txt_ids, timesteps, y, guidance=None):
         img_emb = jax.vmap(self.img_in)(img)
         txt_emb = jax.vmap(self.txt_in)(txt)

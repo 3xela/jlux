@@ -14,6 +14,7 @@ class T5Wrapper:
         return toks
     
     def __call__(self, prompts: list[str]):
+        self._text_model.to(self.device)
         toks = self._tokenize(prompts).to(self.device)
         with torch.no_grad():
             out = self._text_model(**toks).last_hidden_state

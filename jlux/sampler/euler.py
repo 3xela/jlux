@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+import jax
 
 
 def mu(N):
@@ -16,11 +17,13 @@ def build_schedule(num_steps, N):
     array = jnp.linspace(1.0, 0.0, num_steps + 1, dtype=jnp.bfloat16)
     return schedule(array, N)
 
-
 def euler_sample(model, x_init, img_ids, txt, txt_ids, y, guidance, timesteps):
-    x = x_init
-    for t_curr, t_next in zip(timesteps[:-1], timesteps[1:]):
+    def euler_step(x, ts):
+        t_curr, t_next = ts
         dt = t_next - t_curr
         v = model(x, img_ids, txt, txt_ids, t_curr, y, guidance)
-        x = x + dt * v
-    return x
+        new_x = x + dt * v
+        return (new_x, None)
+
+    out, _ = jax.lax.scan(euler_step, x_init, (timesteps[:-1], timesteps[1:]))
+    return out
