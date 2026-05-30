@@ -1,6 +1,7 @@
-from jlux import Flux, FluxParams
-import jax
 import equinox as eqx
+import jax
+
+from jlux import Flux, FluxParams
 
 test_flux = eqx.filter_eval_shape(Flux, FluxParams(), key=jax.random.PRNGKey(0))
 

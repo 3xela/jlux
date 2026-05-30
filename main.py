@@ -1,11 +1,12 @@
 # scripts/smoke_test_flux.py
+from dataclasses import replace
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-from dataclasses import replace
-import equinox as eqx
 
-from jlux.model.flux import Flux, FluxParams
 from jlux.dit.layers.rope import build_position_ids
+from jlux.model.flux import Flux, FluxParams
 
 
 @eqx.filter_jit

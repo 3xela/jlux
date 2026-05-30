@@ -5,13 +5,13 @@ Verifies the loaded model traces, doesn't NaN, and produces reasonable output.
 """
 
 import time
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
 from huggingface_hub import hf_hub_download
 
-from jlux import FluxParams
-from jlux import load_flux
+from jlux import FluxParams, load_flux
 from jlux.dit.layers.rope import build_position_ids
 
 

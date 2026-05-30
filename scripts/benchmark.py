@@ -1,13 +1,14 @@
 import argparse
 import platform
 import time
+
 import jax
 import numpy as np
-from PIL import Image
 from huggingface_hub import hf_hub_download
+from PIL import Image
 
-from jlux.model.pipeline import FluxPipeline
 from jlux.model import FluxParams
+from jlux.model.pipeline import FluxPipeline
 
 
 def print_env():
@@ -23,8 +24,7 @@ def print_env():
 
 def fmt_stats(times, label):
     mean = sum(times) / len(times)
-    print(f"  {label:7s} mean={mean:6.2f}s  "
-          f"min={min(times):6.2f}s  max={max(times):6.2f}s")
+    print(f"  {label:7s} mean={mean:6.2f}s  min={min(times):6.2f}s  max={max(times):6.2f}s")
     return mean
 
 
@@ -36,10 +36,10 @@ def main():
     parser.add_argument("--steps", type=int, default=28)
     parser.add_argument("--guidance", type=float, default=3.5)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--n_runs", type=int, default=3,
-                        help="timed runs after warmup")
-    parser.add_argument("--save", type=str, default=None,
-                        help="optional output path for the generated image")
+    parser.add_argument("--n_runs", type=int, default=3, help="timed runs after warmup")
+    parser.add_argument(
+        "--save", type=str, default=None, help="optional output path for the generated image"
+    )
     parser.add_argument("--flux_path", type=str, default=None)
     args = parser.parse_args()
 
@@ -59,17 +59,19 @@ def main():
     key = jax.random.PRNGKey(args.seed)
     B = len(prompts)
 
-    print(f"config: {args.height}x{args.width}, {args.steps} steps, "
-          f"guidance={args.guidance}, B={B}, n_runs={args.n_runs}")
+    print(
+        f"config: {args.height}x{args.width}, {args.steps} steps, "
+        f"guidance={args.guidance}, B={B}, n_runs={args.n_runs}"
+    )
     print(f"prompt: {args.prompt!r}\n")
 
     # ---- Warmup (absorbs JAX compile) ----
     print("warmup (includes one-time compile)...")
     t0 = time.perf_counter()
     pooled, seq = pipe.encode(prompts)
-    pooled.block_until_ready(); seq.block_until_ready()
-    latent = pipe.sample(pooled, seq, B, args.height, args.width,
-                         args.steps, args.guidance, key)
+    pooled.block_until_ready()
+    seq.block_until_ready()
+    latent = pipe.sample(pooled, seq, B, args.height, args.width, args.steps, args.guidance, key)
     latent.block_until_ready()
     img = pipe.decode(latent, args.height, args.width)
     warmup_t = time.perf_counter() - t0
@@ -80,12 +82,14 @@ def main():
     for i in range(args.n_runs):
         t0 = time.perf_counter()
         pooled, seq = pipe.encode(prompts)
-        pooled.block_until_ready(); seq.block_until_ready()
+        pooled.block_until_ready()
+        seq.block_until_ready()
         encode_t.append(time.perf_counter() - t0)
 
         t0 = time.perf_counter()
-        latent = pipe.sample(pooled, seq, B, args.height, args.width,
-                             args.steps, args.guidance, key)
+        latent = pipe.sample(
+            pooled, seq, B, args.height, args.width, args.steps, args.guidance, key
+        )
         latent.block_until_ready()
         sample_t.append(time.perf_counter() - t0)
 

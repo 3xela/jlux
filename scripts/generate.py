@@ -1,11 +1,12 @@
 import argparse
+
 import jax
 import numpy as np
-from PIL import Image
 from huggingface_hub import hf_hub_download
+from PIL import Image
 
-from jlux.model.pipeline import FluxPipeline
 from jlux.model import FluxParams
+from jlux.model.pipeline import FluxPipeline
 
 
 def main():
@@ -17,8 +18,12 @@ def main():
     parser.add_argument("--guidance", type=float, default=3.5)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--out", type=str, default="out.png")
-    parser.add_argument("--flux_path", type=str, default=None,
-                        help="local safetensors path; if unset, downloads from HF")
+    parser.add_argument(
+        "--flux_path",
+        type=str,
+        default=None,
+        help="local safetensors path; if unset, downloads from HF",
+    )
     args = parser.parse_args()
 
     flux_path = args.flux_path or hf_hub_download(
@@ -30,12 +35,10 @@ def main():
     pipe = FluxPipeline(load_cfg=FluxParams(), flux_path=flux_path)
 
     key = jax.random.PRNGKey(args.seed)
-    print(f"generating: {args.height}x{args.width}, {args.steps} steps, "
-          f"guidance={args.guidance}")
+    print(f"generating: {args.height}x{args.width}, {args.steps} steps, guidance={args.guidance}")
     print(f"prompt: {args.prompt!r}")
 
-    img = pipe([args.prompt], args.height, args.width,
-               args.steps, args.guidance, key)
+    img = pipe([args.prompt], args.height, args.width, args.steps, args.guidance, key)
     img.block_until_ready()
 
     img_np = np.asarray(img[0]).transpose(1, 2, 0)

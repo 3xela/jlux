@@ -5,13 +5,16 @@ Loads weights from the HuggingFace cache, prints diagnostics.
 """
 
 import time
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
 from huggingface_hub import hf_hub_download
 
-from jlux import FluxParams
-from jlux import load_flux  # adjust import to wherever you put it
+from jlux import (
+    FluxParams,
+    load_flux,  # adjust import to wherever you put it
+)
 
 
 def main():
@@ -71,16 +74,10 @@ def main():
     # Cheap statistical sanity: weights should be small, centered, no NaNs.
     print("\nGlobal weight stats:")
     sample = model.img_in.weight.astype(jnp.float32)
-    print(
-        f"  img_in.weight  mean={float(jnp.mean(sample)):+.4e}  "
-        f"std={float(jnp.std(sample)):.4e}"
-    )
+    print(f"  img_in.weight  mean={float(jnp.mean(sample)):+.4e}  std={float(jnp.std(sample)):.4e}")
 
     sample = model.double_blocks[0].img_attn.qkv.weight.astype(jnp.float32)
-    print(
-        f"  block0.qkv     mean={float(jnp.mean(sample)):+.4e}  "
-        f"std={float(jnp.std(sample)):.4e}"
-    )
+    print(f"  block0.qkv     mean={float(jnp.mean(sample)):+.4e}  std={float(jnp.std(sample)):.4e}")
 
     print("\n✓ Loader test complete.")
 

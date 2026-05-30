@@ -1,14 +1,14 @@
 # scripts/test_sampler_realistic.py
 import time
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
 from huggingface_hub import hf_hub_download
 
-from jlux import FluxParams
-from jlux import load_flux
+from jlux import FluxParams, load_flux
 from jlux.dit.layers.rope import build_position_ids
-from jlux.sampler import euler_sample, build_schedule
+from jlux.sampler import build_schedule, euler_sample
 
 
 def main():
@@ -50,9 +50,7 @@ def main():
     # Real sampling run
     print(f"\nSampling {num_steps} steps...")
     t0 = time.time()
-    out = euler_sample(
-        jitted_model, x_init, img_ids, txt, txt_ids, y, guidance, timesteps
-    )
+    out = euler_sample(jitted_model, x_init, img_ids, txt, txt_ids, y, guidance, timesteps)
     jax.block_until_ready(out)
     elapsed = time.time() - t0
     print(f"  total: {elapsed:.2f}s  ({elapsed / num_steps * 1000:.0f}ms/step)")

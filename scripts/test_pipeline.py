@@ -1,13 +1,14 @@
 import argparse
 import time
+
 import jax
 import jax.numpy as jnp
 import numpy as np
-from PIL import Image
 from huggingface_hub import hf_hub_download
+from PIL import Image
 
-from jlux.model.pipeline import FluxPipeline
 from jlux.model import FluxParams
+from jlux.model.pipeline import FluxPipeline
 
 
 def run_call(pipe, prompts, height, width, steps, guidance, key, label):
@@ -29,10 +30,10 @@ def main():
     parser.add_argument("--guidance", type=float, default=3.5)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--out", type=str, default="out.png")
-    parser.add_argument("--n_runs", type=int, default=2,
-                        help="timed runs after warmup")
-    parser.add_argument("--profile_dir", type=str, default=None,
-                        help="jax.profiler.trace dir for the final run")
+    parser.add_argument("--n_runs", type=int, default=2, help="timed runs after warmup")
+    parser.add_argument(
+        "--profile_dir", type=str, default=None, help="jax.profiler.trace dir for the final run"
+    )
     args = parser.parse_args()
 
     flux_path = args.flux_path or hf_hub_download(
@@ -49,8 +50,10 @@ def main():
     key = jax.random.PRNGKey(args.seed)
     common = (prompts, args.height, args.width, args.steps, args.guidance, key)
 
-    print(f"sampling: {args.height}x{args.width}, {args.steps} steps, "
-          f"guidance={args.guidance}, B={len(prompts)}")
+    print(
+        f"sampling: {args.height}x{args.width}, {args.steps} steps, "
+        f"guidance={args.guidance}, B={len(prompts)}"
+    )
 
     # Warmup: first call includes compilation
     img, warmup_t = run_call(pipe, *common, label="warmup (compile + run)")
@@ -60,9 +63,9 @@ def main():
     for i in range(args.n_runs):
         if args.profile_dir and i == args.n_runs - 1:
             with jax.profiler.trace(args.profile_dir):
-                img, t = run_call(pipe, *common, label=f"run {i+1} (profiled)")
+                img, t = run_call(pipe, *common, label=f"run {i + 1} (profiled)")
         else:
-            img, t = run_call(pipe, *common, label=f"run {i+1}")
+            img, t = run_call(pipe, *common, label=f"run {i + 1}")
         times.append(t)
 
     avg = sum(times) / len(times)

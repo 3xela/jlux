@@ -7,14 +7,13 @@ paths from the jlux Flux model. Writes three files:
   - namespace_diff.txt  : side-by-side diff for renaming reference
 """
 
+import equinox as eqx
 import jax
 import jax.tree_util as jtu
-import equinox as eqx
 from huggingface_hub import hf_hub_download
 from safetensors import safe_open
 
 from jlux.model.flux import Flux, FluxParams
-
 
 # ---------- 1. Get the checkpoint ----------
 
@@ -59,9 +58,7 @@ model = Flux(FluxParams(), key=jax.random.PRNGKey(0))
 arrays_only = eqx.filter(model, eqx.is_array)
 leaves_with_paths, _ = jtu.tree_flatten_with_path(arrays_only)
 
-jlux_entries = sorted(
-    (path_to_str(path), tuple(leaf.shape)) for path, leaf in leaves_with_paths
-)
+jlux_entries = sorted((path_to_str(path), tuple(leaf.shape)) for path, leaf in leaves_with_paths)
 
 with open("jlux_paths.txt", "w") as out:
     for p, shape in jlux_entries:
@@ -82,11 +79,7 @@ with open("namespace_diff.txt", "w") as out:
     out.write(f"{'-' * 70} | {'-' * 70}\n")
     for i in range(max_len):
         st = f"{st_entries[i][0]} {st_entries[i][1]}" if i < len(st_entries) else ""
-        jl = (
-            f"{jlux_entries[i][0]} {jlux_entries[i][1]}"
-            if i < len(jlux_entries)
-            else ""
-        )
+        jl = f"{jlux_entries[i][0]} {jlux_entries[i][1]}" if i < len(jlux_entries) else ""
         out.write(f"{st:<70} | {jl:<70}\n")
 
 print("Side-by-side written to namespace_diff.txt")

@@ -6,7 +6,6 @@ import jax.numpy as jnp
 from jlux.dit import FluxSingleStreamBlock
 from jlux.dit.layers import build_position_ids
 
-
 DIM = 3072
 NUM_HEADS = 24
 S_TEXT = 4
