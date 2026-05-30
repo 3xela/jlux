@@ -1,5 +1,5 @@
-import jax.numpy as jnp
 import jax
+import jax.numpy as jnp
 
 
 def mu(N):
@@ -16,6 +16,7 @@ def schedule(t, N):
 def build_schedule(num_steps, N):
     array = jnp.linspace(1.0, 0.0, num_steps + 1, dtype=jnp.bfloat16)
     return schedule(array, N)
+
 
 def euler_sample(model, x_init, img_ids, txt, txt_ids, y, guidance, timesteps):
     def euler_step(x, ts):

@@ -1,18 +1,20 @@
-from diffusers import AutoencoderKL
-import torch
 import jax.numpy as jnp
 import numpy as np
+import torch
+from diffusers import AutoencoderKL
 
 
 class VAEWrapper:
-    def __init__(self, path = "black-forest-labs/FLUX.1-dev" ):
+    def __init__(self, path="black-forest-labs/FLUX.1-dev"):
         self._path = path
         self.device = "cuda"
-        self._vae = AutoencoderKL.from_pretrained(self._path, subfolder="vae").to(self.device).eval()
+        self._vae = (
+            AutoencoderKL.from_pretrained(self._path, subfolder="vae").to(self.device).eval()
+        )
         self.scale = self._vae.config.scaling_factor
         self.shift = self._vae.config.shift_factor
 
-    def encode(self, img : jnp.ndarray, sample: bool = False):
+    def encode(self, img: jnp.ndarray, sample: bool = False):
         img_t = torch.from_numpy(np.asarray(img).copy()).to(self.device)
         with torch.no_grad():
             posterior = self._vae.encode(img_t).latent_dist
@@ -29,14 +31,12 @@ class VAEWrapper:
             img = self._vae.decode(z).sample
             return jnp.asarray(img.float().detach().cpu().numpy())
 
-        
+
 def main():
     vae = VAEWrapper()
 
     B, H, W = 2, 256, 256
-    img = jnp.asarray(
-        np.random.uniform(-1, 1, size=(B, 3, H, W)).astype(np.float32)
-    )
+    img = jnp.asarray(np.random.uniform(-1, 1, size=(B, 3, H, W)).astype(np.float32))
     print(f"input  shape: {img.shape}")
 
     latent = vae.encode(img)

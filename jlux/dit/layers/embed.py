@@ -1,6 +1,6 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
 
 
 class MLPEmbedder(eqx.Module):
@@ -9,12 +9,8 @@ class MLPEmbedder(eqx.Module):
 
     def __init__(self, in_dim, hidden_dim, key):
         keys = jax.random.split(key, 2)
-        self.in_layer = eqx.nn.Linear(
-            in_features=in_dim, out_features=hidden_dim, key=keys[0]
-        )
-        self.out_layer = eqx.nn.Linear(
-            in_features=hidden_dim, out_features=hidden_dim, key=keys[1]
-        )
+        self.in_layer = eqx.nn.Linear(in_features=in_dim, out_features=hidden_dim, key=keys[0])
+        self.out_layer = eqx.nn.Linear(in_features=hidden_dim, out_features=hidden_dim, key=keys[1])
 
     def __call__(self, x):
         return self.out_layer(jax.nn.silu(self.in_layer(x)))

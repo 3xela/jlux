@@ -1,6 +1,6 @@
-import jax.numpy as jnp
 import equinox as eqx
-from jaxtyping import Float, Array
+import jax.numpy as jnp
+from jaxtyping import Array, Float
 
 
 class LayerNorm(eqx.Module):

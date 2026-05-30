@@ -1,6 +1,6 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
 
 
 class Modulation6D(eqx.Module):
@@ -14,9 +14,7 @@ class Modulation6D(eqx.Module):
         x = jax.nn.silu(temb)
         out = self.lin(x)
         # out.shape = (6D, ), split along each D
-        shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = jnp.split(
-            out, 6, axis=-1
-        )
+        shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = jnp.split(out, 6, axis=-1)
         return shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp
 
 

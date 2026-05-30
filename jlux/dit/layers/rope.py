@@ -1,5 +1,5 @@
-import jax.numpy as jnp
 import equinox as eqx
+import jax.numpy as jnp
 
 
 def build_position_ids(s_text: int, H_p: int, W_p: int):

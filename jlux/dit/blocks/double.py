@@ -1,10 +1,11 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
-from ..layers.modulation import Modulation6D
-from ..layers.norms import LayerNorm
+
 from ..layers.attention import FluxSelfAttention
 from ..layers.mlp import FluxMLP
+from ..layers.modulation import Modulation6D
+from ..layers.norms import LayerNorm
 from ..layers.rope import RoPE
 
 
@@ -42,12 +43,8 @@ class FluxDoubleStreamBlock(eqx.Module):
         self.txt_norm1 = LayerNorm(dim=self.dim, use_affine=False)
         self.txt_norm2 = LayerNorm(dim=self.dim, use_affine=False)
 
-        self.img_attn = FluxSelfAttention(
-            dim=self.dim, num_heads=self.num_heads, key=keys[2]
-        )
-        self.txt_attn = FluxSelfAttention(
-            dim=self.dim, num_heads=self.num_heads, key=keys[3]
-        )
+        self.img_attn = FluxSelfAttention(dim=self.dim, num_heads=self.num_heads, key=keys[2])
+        self.txt_attn = FluxSelfAttention(dim=self.dim, num_heads=self.num_heads, key=keys[3])
 
         self.txt_mlp = FluxMLP(in_dim=self.dim, key=keys[4])
         self.img_mlp = FluxMLP(in_dim=self.dim, key=keys[5])

@@ -1,6 +1,7 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
+
 from .norms import QKNorm
 
 
@@ -21,9 +22,7 @@ class FluxSelfAttention(eqx.Module):
         key_qkv, key_proj = jax.random.split(key, 2)
 
         self.proj = eqx.nn.Linear(in_features=dim, out_features=dim, key=key_proj)
-        self.qkv = eqx.nn.Linear(
-            in_features=self.dim, out_features=3 * self.dim, key=key_qkv
-        )
+        self.qkv = eqx.nn.Linear(in_features=self.dim, out_features=3 * self.dim, key=key_qkv)
         self.norm = QKNorm(self.head_dim)
 
     def qkv_proj(self, x):

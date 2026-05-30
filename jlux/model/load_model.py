@@ -1,10 +1,11 @@
-from .flux import FluxParams, Flux
-import jax
-from jax.tree_util import GetAttrKey, SequenceKey
-import jax.tree_util as jtu
-import jax.numpy as jnp
 import equinox as eqx
+import jax
+import jax.numpy as jnp
+import jax.tree_util as jtu
+from jax.tree_util import GetAttrKey, SequenceKey
 from safetensors import safe_open
+
+from .flux import Flux, FluxParams
 
 
 def path_to_key(path: tuple):
@@ -32,9 +33,7 @@ def load_flux(cfg: FluxParams, path: str, dtype=jnp.bfloat16) -> Flux:
     with safe_open(path, framework="flax") as f:
         tensors = {k: f.get_tensor(k).astype(dtype) for k in f.keys()}
 
-    arrays_template = eqx.filter(
-        template, lambda x: isinstance(x, jax.ShapeDtypeStruct)
-    )
+    arrays_template = eqx.filter(template, lambda x: isinstance(x, jax.ShapeDtypeStruct))
     leaves_with_paths, treedef = jtu.tree_flatten_with_path(arrays_template)
     new_leaves = []
     used_keys = set()
@@ -57,12 +56,8 @@ def load_flux(cfg: FluxParams, path: str, dtype=jnp.bfloat16) -> Flux:
         used_keys.add(key)
     unused = set(tensors.keys()) - used_keys
     if unused:
-        raise ValueError(
-            f"{len(unused)} unused safetensors keys, e.g. {sorted(unused)[:5]}"
-        )
+        raise ValueError(f"{len(unused)} unused safetensors keys, e.g. {sorted(unused)[:5]}")
     new_arrays_template = jtu.tree_unflatten(treedef, new_leaves)
-    static_template = eqx.filter(
-        template, lambda x: not isinstance(x, jax.ShapeDtypeStruct)
-    )
+    static_template = eqx.filter(template, lambda x: not isinstance(x, jax.ShapeDtypeStruct))
     model = eqx.combine(new_arrays_template, static_template)
     return model

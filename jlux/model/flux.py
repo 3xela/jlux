@@ -1,9 +1,11 @@
-from ..dit.blocks import FluxDoubleStreamBlock, FluxSingleStreamBlock
-from ..dit.layers import MLPEmbedder, FinalLayer, timestep_embedding
+from dataclasses import dataclass
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
-from dataclasses import dataclass
+
+from ..dit.blocks import FluxDoubleStreamBlock, FluxSingleStreamBlock
+from ..dit.layers import FinalLayer, MLPEmbedder, timestep_embedding
 
 
 @dataclass(frozen=True)
@@ -51,16 +53,12 @@ class Flux(eqx.Module):
             out_features=cfg.hidden_size,
             key=emb_keys[1],
         )
-        self.time_in = MLPEmbedder(
-            in_dim=256, hidden_dim=cfg.hidden_size, key=emb_keys[2]
-        )
+        self.time_in = MLPEmbedder(in_dim=256, hidden_dim=cfg.hidden_size, key=emb_keys[2])
         self.vector_in = MLPEmbedder(
             in_dim=cfg.vec_in_dim, hidden_dim=cfg.hidden_size, key=emb_keys[3]
         )
         if cfg.guidance_embed:
-            self.guidance_in = MLPEmbedder(
-                in_dim=256, hidden_dim=cfg.hidden_size, key=emb_keys[4]
-            )
+            self.guidance_in = MLPEmbedder(in_dim=256, hidden_dim=cfg.hidden_size, key=emb_keys[4])
 
         self.double_blocks = [
             FluxDoubleStreamBlock(dim=cfg.hidden_size, num_heads=cfg.num_heads, key=k)

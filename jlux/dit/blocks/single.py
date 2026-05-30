@@ -1,9 +1,10 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-import equinox as eqx
+
+from ..layers.attention import merge_heads, split_head
 from ..layers.modulation import Modulation3D
 from ..layers.norms import LayerNorm, QKNorm
-from ..layers.attention import merge_heads, split_head
 from ..layers.rope import RoPE
 
 
@@ -25,12 +26,8 @@ class FluxSingleStreamBlock(eqx.Module):
         self.num_heads = num_heads
         self.head_dim = dim // num_heads
         keys = jax.random.split(key, 3)
-        self.linear1 = eqx.nn.Linear(
-            in_features=self.dim, out_features=7 * dim, key=keys[0]
-        )
-        self.linear2 = eqx.nn.Linear(
-            in_features=5 * self.dim, out_features=self.dim, key=keys[1]
-        )
+        self.linear1 = eqx.nn.Linear(in_features=self.dim, out_features=7 * dim, key=keys[0])
+        self.linear2 = eqx.nn.Linear(in_features=5 * self.dim, out_features=self.dim, key=keys[1])
         self.modulation = Modulation3D(dim=dim, key=keys[2])
 
         self.rope = RoPE()
