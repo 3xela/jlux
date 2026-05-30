@@ -21,8 +21,8 @@ class FluxPipeline:
     def encode(self, prompts: list[str]):
         pooled = self.clip(prompts)
         seq = self.t5(prompts)
-        self.clip._text_model.unload()
-        self.t5._text_model.unload()
+        self.clip.unload()
+        self.t5.unload()
 
         return pooled, seq
 

@@ -23,7 +23,6 @@ class CLIPWrapper:
         return toks
 
     def unload(self):
-        self._tokenizer.to("cpu")
         self._text_model.to("cpu")
         torch.cuda.empty_cache()
 
