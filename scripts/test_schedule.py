@@ -35,7 +35,7 @@ def main():
     all_ids = build_position_ids(s_text=L, H_p=H_p, W_p=W_p)
     txt_ids, img_ids = all_ids[:L], all_ids[L:]
     guidance = jnp.array(3.5, dtype=jnp.bfloat16)
-    timesteps = build_schedule(num_steps=num_steps, N=N)
+    timesteps = build_schedule(num_steps=num_steps, N=N, dtype = jnp.bfloat16)
 
     # Jit the model call
     jitted_model = eqx.filter_jit(model)

@@ -4,8 +4,9 @@ from transformers import T5EncoderModel, T5Tokenizer
 
 
 class T5Wrapper:
-    def __init__(self, path="google/t5-v1_1-xxl"):
+    def __init__(self, dtype, path="google/t5-v1_1-xxl"):
         self._path = path
+        self.dtype = dtype
         self.device = "cuda"
         self._tokenizer = T5Tokenizer.from_pretrained(self._path)
         self._text_model = (
@@ -35,4 +36,4 @@ class T5Wrapper:
         toks = self._tokenize(prompts).to(self.device)
         with torch.no_grad():
             out = self._text_model(**toks).last_hidden_state
-            return jnp.asarray(out.float().cpu().numpy()).astype(jnp.bfloat16)
+            return jnp.asarray(out.float().cpu().numpy()).astype(self.dtype)

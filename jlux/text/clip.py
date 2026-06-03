@@ -4,7 +4,8 @@ from transformers import CLIPTextModel, CLIPTokenizer
 
 
 class CLIPWrapper:
-    def __init__(self, path="openai/clip-vit-large-patch14"):
+    def __init__(self, dtype, path="openai/clip-vit-large-patch14"):
+        self.dtype = dtype
         self._path = path
         self.device = "cuda"
         self._tokenizer = CLIPTokenizer.from_pretrained(self._path)
@@ -31,4 +32,4 @@ class CLIPWrapper:
         toks = self._tokenize(prompts).to(self.device)
         with torch.no_grad():
             out = self._text_model(**toks).pooler_output
-            return jnp.asarray(out.cpu().numpy()).astype(jnp.bfloat16)
+            return jnp.asarray(out.cpu().numpy()).astype(self.dtype)

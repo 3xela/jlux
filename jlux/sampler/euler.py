@@ -13,8 +13,8 @@ def schedule(t, N):
     return (jnp.exp(mu(N)) * t) / (1 + (jnp.exp(mu(N)) - 1) * t)
 
 
-def build_schedule(num_steps, N):
-    array = jnp.linspace(1.0, 0.0, num_steps + 1, dtype=jnp.bfloat16)
+def build_schedule(num_steps, N, dtype):
+    array = jnp.linspace(1.0, 0.0, num_steps + 1, dtype=dtype)
     return schedule(array, N)
 
 
