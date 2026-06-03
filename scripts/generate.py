@@ -11,7 +11,7 @@ from jlux.model.pipeline import FluxPipeline
 
 def main():
     parser = argparse.ArgumentParser(description="Generate an image with jlux.")
-    parser.add_argument("--prompt", type=str, default="a photo of a cat")
+    parser.add_argument("prompts", nargs = "+" ,type=str, default="a photo of a cat")
     parser.add_argument("--height", type=int, default=1024)
     parser.add_argument("--width", type=int, default=1024)
     parser.add_argument("--steps", type=int, default=28)
@@ -36,16 +36,15 @@ def main():
 
     key = jax.random.PRNGKey(args.seed)
     print(f"generating: {args.height}x{args.width}, {args.steps} steps, guidance={args.guidance}")
-    print(f"prompt: {args.prompt!r}")
 
-    img = pipe([args.prompt], args.height, args.width, args.steps, args.guidance, key)
-    img.block_until_ready()
+    imgs = pipe(args.prompts, args.height, args.width, args.steps, args.guidance, key)
+    imgs.block_until_ready()
 
-    img_np = np.asarray(img[0]).transpose(1, 2, 0)
-    img_np = np.clip((img_np + 1.0) * 127.5, 0, 255).astype(np.uint8)
-    Image.fromarray(img_np).save(args.out)
-    print(f"saved to {args.out}")
-
+    for i, img in enumerate(imgs):
+        img_np = np.asarray(img).transpose(1, 2, 0)
+        img_np = np.clip((img_np + 1.0) * 127.5, 0, 255).astype(np.uint8)
+        Image.fromarray(img_np).save(f"out_{i}.png")
+        print(f"saved out_{i}.png")
 
 if __name__ == "__main__":
     main()
