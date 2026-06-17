@@ -10,6 +10,7 @@ class FluxMLP(eqx.Module):
 
     def __init__(self, in_dim: int, key):
         self.in_dim = in_dim
+        #TODO dont hardcode to 4, leave it general for later flux models. 
         self.hidden_dim = 4 * self.in_dim
         key_1, key_2 = jax.random.split(key, 2)
         self.linear1 = eqx.nn.Linear(

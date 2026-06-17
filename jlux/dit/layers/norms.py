@@ -16,7 +16,7 @@ class LayerNorm(eqx.Module):
         else:
             self.gamma = None
             self.beta = None
-        self.eps = 1e-5
+        self.eps = 1e-6
         self.use_affine = use_affine
 
     def __call__(self, x):
@@ -36,7 +36,7 @@ class RMSNorm(eqx.Module):
 
     def __init__(self, dim):
         self.scale = jnp.ones(dim)
-        self.eps = 1e-5
+        self.eps = 1e-6
 
     def __call__(self, x):
         # x.shape = (..., D)

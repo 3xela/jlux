@@ -39,6 +39,7 @@ class Flux(eqx.Module):
 
     def __init__(self, cfg: FluxParams, key):
         self.cfg = cfg
+        self.guidance_in = None
         emb_keys, double_keys, single_keys, final_key = jax.random.split(key, 4)
 
         emb_keys = jax.random.split(emb_keys, 5)
